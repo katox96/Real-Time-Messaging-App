@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Hello world</title>
+   </head>
+   <script src = "/socket.io/socket.io.js"></script>
+   
+   <script>
+      var socket = io();
+      var my_room_no;
+      var msg;
+      socket.on('connectToRoom',function(data) {
+          my_room_no = data;
+         document.getElementById('room_no').innerHTML = my_room_no;
+      });
+
+      function send_message(){
+         msg = document.getElementById('message_field').value ;
+         console.log(my_room_no+" "+msg);
+         socket.emit('send_message', { my_room_no: my_room_no , message: msg});
+         document.getElementById('message_field').value ="";
+      }
+
+      socket.on('new_message',function(data){
+         var msgbox =  document.getElementById('messages').innerHTML ;
+         document.getElementById('messages').innerHTML = msgbox+data;
+      })
+   </script>
+   <body>
+   <span id="room_no"></span>
+   <span id="messages"></span>
+   <form>
+      <input type="text" placeholder="Enter message" id="message_field">
+      <input type="button" onclick="send_message()" value="send">
+   </form>
+   </body>
+</html>

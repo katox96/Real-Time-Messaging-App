@@ -38,7 +38,7 @@
 
       function disconnect(){
          socket.emit('disconn',{ my_room_no: my_room_no});
-         window.location="http://localhost:3000";
+         location.reload();
       }
 
       socket.on('new_message',function(data){

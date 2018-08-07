@@ -13,13 +13,31 @@ io.on('connection', function(socket) {
    connections++;
    console.log(connections+' connections done');
    //Increase roomno 2 clients are present in a room.
-   if(io.nsps['/'].adapter.rooms["room-"+roomno] && io.nsps['/'].adapter.rooms["room-"+roomno].length > 1 || (connections%2) != 0){
+   if((connections%2) != 0){
          roomno++;
+         console.log(roomno+' max room alloted');
+         // If room is joined send the user waiting message.
+         if(socket.join("room-"+roomno)){
+             io.to('room-'+roomno).emit('wait_for_the_user', 'Finding for someone to talk');
+            console.log('room joined');
+         }
+   }else{
+         console.log(roomno+' max room alloted');
+         // If room is joined send the user waiting message.
+         if(socket.join("room-"+roomno)){
+             io.to('room-'+roomno).emit('user_found', 'You are talking to a stranger ! Say hi... <button onclick="disconnect()">Find new</button>');
+            console.log('room joined');
+         }
    }
-   console.log(roomno+' max room alloted');
-   socket.join("room-"+roomno);
+
+
    //Send this event to everyone in the room.
    io.sockets.in("room-"+roomno).emit('connectToRoom',roomno);
+
+   socket.on('disconn', function(data){
+      console.log('disconnected');
+      io.to('room-'+data.my_room_no).emit('disconnected', 'Stranger might disconnected <button onclick="disconnect()">Find new</button>');
+   });
 
    //Receiving messages from users and sending to the specific rooms.
    socket.on('send_message', function(data){

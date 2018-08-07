@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html>
    <head>
+      <style>
+      #message_field{
+         position:bottom;
+      }
+      </style>
       <title>Hello world</title>
    </head>
+   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
    <script src = "/socket.io/socket.io.js"></script>
-   
-   <script>
-      var socket = io();
+   <script>      var socket = io();
       var my_room_no;
       var msg;
       socket.on('connectToRoom',function(data) {
@@ -14,23 +18,40 @@
          document.getElementById('room_no').innerHTML = my_room_no;
       });
 
+      socket.on('wait_for_the_user', function(data){
+         document.getElementById('status').innerHTML = data;
+      });
+
+      socket.on('user_found', function(data){
+         document.getElementById('status').innerHTML = data;
+      });
+
+      socket.on('disconnected', function(data){
+         document.getElementById('status').innerHTML = data;
+      })
+
       function send_message(){
          msg = document.getElementById('message_field').value ;
-         console.log(my_room_no+" "+msg);
          socket.emit('send_message', { my_room_no: my_room_no , message: msg});
          document.getElementById('message_field').value ="";
+      }
+
+      function disconnect(){
+         socket.emit('disconn',{ my_room_no: my_room_no});
+         window.location="http://localhost:3000";
       }
 
       socket.on('new_message',function(data){
          var msgbox =  document.getElementById('messages').innerHTML ;
          document.getElementById('messages').innerHTML = msgbox+data;
-      })
-   </script>
+      });
+      </script> 
    <body>
    <span id="room_no"></span>
+   <span id="status"></span>
    <span id="messages"></span>
    <form>
-      <input type="text" placeholder="Enter message" id="message_field">
+      <input type="text"  placeholder="Enter message" id="message_field">
       <input type="button" onclick="send_message()" value="send">
    </form>
    </body>

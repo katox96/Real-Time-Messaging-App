@@ -4,15 +4,13 @@
   "description": "A simple chat app.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "Abhishek katoch",
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.3",
-    "socket.io": "^2.1.1"
-  },
-  "scripts":{
-    "start": "node index.js"
+    "socket.io": "^2.1.1",
+    "xss-filters": "^1.2.7"
   }
 }

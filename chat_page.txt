@@ -1,0 +1,50 @@
+<html>
+<head>
+
+	  <link rel="stylesheet" type="text/css" href="/css/chat.css">
+<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title></title>
+<meta http-equiv="cache-control" content="max-age=0">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<meta http-equiv="expires" content="Tue, 01 Jan 1980 11:00:00 GMT">
+<meta http-equiv="pragma" content="no-cache">
+</head>
+<body>
+<div id="navbar">
+    <img src="/used_images/logo.png" style="width:140px; height:30px; padding-botton:0px; margin-top:7px; margin-top:7px;  "></img>
+
+<a href=/index.php><p class=navbar-buttons>Login</p></a><a href=/homepage.php><p class=navbar-buttons>Feeds</p></a></div>
+ 
+</div>
+		<div id="auto">
+			<b>Finding someone to talk...</b>
+		</div>
+		
+		<div class="footer">
+		<input type="button" id="find_new" onclick="find_new()" value="Find new">
+		<form name="anonymous_chat_form"   method="post">
+			<div class="flexContainer">
+				<input type="text"  name="chat_message"  placeholder="Enter the Message">
+				<input type="button" onclick="send_message()"   value="send"></textarea>
+			</div>
+		</form>
+		</div><script src="/js/find_new_chat.js" ></script>
+<script src="/js/jquery-3.3.1.min.js"></script>
+<script src="/js/send_message.js"></script>
+<script>windows.setInterval(keepAliveCall, 20000);</script>
+<script>
+function autorefresh(){
+	$("#auto").load("fetch_chat.php").show();
+	scroll();
+}
+setInterval('autorefresh()', 900);
+</script>
+<script>
+function scroll(){
+  var elem = document.getElementById('auto');
+  elem.scrollTop = elem.scrollHeight;
+}
+</script>
+</body>
+</html>

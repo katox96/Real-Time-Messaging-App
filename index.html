@@ -2,15 +2,103 @@
 <html>
    <head>
       <style>
-      #message_field{
-         position:bottom;
+      .sent_texts{
+         text-align:right;
+         margin-top: 0px;
+         margin-bottom: 0px;
       }
+
+      .received_texts{
+         text-align:left;
+         margin-top: 0px;
+         margin-bottom: 0px;
+      }
+@import url('https://fonts.googleapis.com/css?family=Lobster');
+body {
+  margin: 0;
+  font-size: 12px;
+}
+
+    .footer {
+       position: fixed;
+       bottom: 0;
+       width: 100%;
+       color: white;
+       background-color:white;
+    }
+
+
+#navbar {
+  position: fixed;
+  width:100%;
+  box-shadow: 1px 2px 4px rgba(0, 0, 0, .5);
+  overflow: hidden;
+  background-color: white;
+  height:50px;
+}
+
+.flexContainer{
+   display:flex;
+}
+
+.content {
+  padding: 16px;
+}
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.sticky + .content {
+  padding-top: 60px;
+}
+
+        *:focus {
+    outline: none;
+}
+
+.flexContainer{
+  display: flex;
+}
+
+#message_box{
+   padding-top:52px;
+   padding-bottom: 80px;
+}
+
+  input[type=text]
+    {   
+        margin-top:6px;
+        width:80%;
+        border: 0px;
+        background: transparent;
+        border-radius: 10px;
+        border:2px solid black;
+        height:25px;
+        color: black;
+    }
+      input[type=submit]
+  {
+        margin-top:6px;
+        border: 0px;
+        background: transparent;
+        border-radius: 10px;
+        border:2px solid black;
+        height:25px;
+        color: black;
+        font-family:  'Lobster', cursive;
+        width:20%;
+  }
+
       </style>
       <title>Hello world</title>
    </head>
    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
    <script src = "/socket.io/socket.io.js"></script>
-   <script>      var socket = io();
+   <script>var socket = io();
+      var my_id = Math.random();
       var my_room_no;
       var msg;
       socket.on('connectToRoom',function(data) {
@@ -32,8 +120,10 @@
 
       function send_message(){
          msg = document.getElementById('message_field').value ;
-         socket.emit('send_message', { my_room_no: my_room_no , message: msg});
+         console.log(my_id);
+         socket.emit('send_message', { my_room_no: my_room_no , my_id: my_id , message: msg});
          document.getElementById('message_field').value ="";
+         return false;
       }
 
       function disconnect(){
@@ -41,18 +131,55 @@
          location.reload();
       }
 
-      socket.on('new_message',function(data){
-         var msgbox =  document.getElementById('messages').innerHTML ;
-         document.getElementById('messages').innerHTML = msgbox+data;
+      socket.on('he_is_typing',function(data){
+         if(data.his_id != my_id){
+            document.getElementById('typing_status').innerHTML = "<br>Stranger is typing ...";
+                        setTimeout(function(){
+               document.getElementById('typing_status').innerHTML="";
+            }, 1000);
+         }
       });
+
+      socket.on('new_message',function(data){
+         if(my_id == data.my_id){
+            document.getElementById('messages').innerHTML = "<p class=sent_texts>"+data.msg+"</p>";
+            document.getElementById('messages').id = "";
+            var privious_messages = document.getElementById('message_box').innerHTML;
+            document.getElementById('message_box').innerHTML = privious_messages + "<span id=messages></span>";
+         }else{
+            document.getElementById('messages').innerHTML = "<p align=received_texts>"+data.msg+"</p>";
+            document.getElementById('messages').id = "";
+            var privious_messages = document.getElementById('message_box').innerHTML;
+            document.getElementById('message_box').innerHTML = privious_messages + "<span id=messages></span>";
+         }
+      });
+
+
+         function i_am_typing(){
+            console.log('typing...');
+            socket.emit('i_am_typing', {my_id: my_id, my_room_no: my_room_no});
+         }
       </script> 
    <body>
+      <div id="navbar">
    <span id="room_no"></span>
    <span id="status"></span>
-   <span id="messages"></span>
-   <form>
-      <input type="text"  placeholder="Enter message" id="message_field">
-      <input type="button" onclick="send_message()" value="send">
+   <span id="typing_status">
+   </span>
+
+      </div>
+
+
+   <div id="message_box">
+      <span id="messages"></span>
+   </div>
+   <div class="footer">
+   <div class="flexContainer">
+   <form action="#"  onsubmit="return send_message()">
+      <input type="text"  placeholder="Enter message" id="message_field" onkeyup="i_am_typing()">
+      <input type="submit" value="send">
    </form>
+   </div>
+</div>
    </body>
 </html>

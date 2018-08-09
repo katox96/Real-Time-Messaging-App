@@ -1,6 +1,7 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var xssFilters = require('xss-filters');
 var port = process.env.PORT || 3000;
 
 app.get('/', function(req, res) {
@@ -30,6 +31,10 @@ io.on('connection', function(socket) {
          }
    }
 
+   // Code for Typing event handler.
+   socket.on('i_am_typing',function(data){
+      io.to('room-'+data.my_room_no).emit('he_is_typing', {his_id: data.my_id});
+   }) 
 
    //Send this event to everyone in the room.
    io.sockets.in("room-"+roomno).emit('connectToRoom',roomno);
@@ -41,11 +46,15 @@ io.on('connection', function(socket) {
 
    //Receiving messages from users and sending to the specific rooms.
    socket.on('send_message', function(data){
+      var msg = xssFilters.inHTMLData(data.message);
+      msg = msg+'<br>';
       console.log(data.my_room_no+' to this roomno');
-      io.to('room-'+data.my_room_no).emit('new_message',data.message+'<br>');
+      console.log(data.my_id);
+      io.to('room-'+data.my_room_no).emit('new_message',{my_id: data.my_id, msg: msg });
    }); 
 });
 
 http.listen(port, function() {
    console.log('listening on localhost:3000');
 });
+   

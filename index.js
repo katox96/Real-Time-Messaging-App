@@ -5,7 +5,7 @@ var xssFilters = require('xss-filters');
 var port = process.env.PORT || 3000;
 
 app.get('/', function(req, res) {
-   res.sendfile('index.html');
+   res.sendFile('/home/ubuntu/chat/index.html');
 });
 
 var roomno = 0;
@@ -19,7 +19,7 @@ io.on('connection', function(socket) {
          console.log(roomno+' max room alloted');
          // If room is joined send the user waiting message.
          if(socket.join("room-"+roomno)){
-             io.to('room-'+roomno).emit('wait_for_the_user', 'Finding for someone to talk');
+             io.to('room-'+roomno).emit('wait_for_the_user', 'Finding for someone to talk...');
             console.log('room joined');
          }
    }else{
@@ -34,7 +34,12 @@ io.on('connection', function(socket) {
    // Code for Typing event handler.
    socket.on('i_am_typing',function(data){
       io.to('room-'+data.my_room_no).emit('he_is_typing', {his_id: data.my_id});
-   }) 
+   });
+
+   // code for Typing stoped event handler.
+   socket.on('i_stoped',function(data){
+      io.to('room-'+data.my_room_no).emit('he_stoped',{his_id: data.my_id});
+   });
 
    //Send this event to everyone in the room.
    io.sockets.in("room-"+roomno).emit('connectToRoom',roomno);
@@ -47,7 +52,6 @@ io.on('connection', function(socket) {
    //Receiving messages from users and sending to the specific rooms.
    socket.on('send_message', function(data){
       var msg = xssFilters.inHTMLData(data.message);
-      msg = msg+'<br>';
       console.log(data.my_room_no+' to this roomno');
       console.log(data.my_id);
       io.to('room-'+data.my_room_no).emit('new_message',{my_id: data.my_id, msg: msg });

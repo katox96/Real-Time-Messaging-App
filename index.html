@@ -1,185 +1,96 @@
-<!DOCTYPE html>
 <html>
-   <head>
-      <style>
-      .sent_texts{
-         text-align:right;
-         margin-top: 0px;
-         margin-bottom: 0px;
-      }
+  <head>
+    <title>Hello world</title>
+  </head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src = "/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+    var my_id = Math.random();
+    var my_room_no;
+    var msg;
+    socket.on('connectToRoom',function(data) {
+      my_room_no = data;
+      // document.getElementById('room_no').innerHTML = my_room_no;
+    });
 
-      .received_texts{
-         text-align:left;
-         margin-top: 0px;
-         margin-bottom: 0px;
-      }
-@import url('https://fonts.googleapis.com/css?family=Lobster');
-body {
-  margin: 0;
-  font-size: 12px;
-}
+    socket.on('wait_for_the_user', function(data){
+      document.getElementById('status').innerHTML = data;
+    });
 
-    .footer {
-       position: fixed;
-       bottom: 0;
-       width: 100%;
-       color: white;
-       background-color:white;
+    socket.on('user_found', function(data){
+      document.getElementById('status').innerHTML = data;
+    });
+
+    socket.on('disconnected', function(data){
+      document.getElementById('status').innerHTML = data;
+    });
+
+    function send_message(){
+      msg = document.getElementById('message_field').value ;
+      if(msg.trim()!=""){
+        console.log(my_id);
+        socket.emit('send_message', { my_room_no: my_room_no , my_id: my_id , message: msg});
+        document.getElementById('message_field').value ="";
+      }
+      return false;
     }
 
-
-#navbar {
-  position: fixed;
-  width:100%;
-  box-shadow: 1px 2px 4px rgba(0, 0, 0, .5);
-  overflow: hidden;
-  background-color: white;
-  height:50px;
-}
-
-.flexContainer{
-   display:flex;
-}
-
-.content {
-  padding: 16px;
-}
-
-.sticky {
-  position: fixed;
-  top: 0;
-  width: 100%;
-}
-
-.sticky + .content {
-  padding-top: 60px;
-}
-
-        *:focus {
-    outline: none;
-}
-
-.flexContainer{
-  display: flex;
-}
-
-#message_box{
-   padding-top:52px;
-   padding-bottom: 80px;
-}
-
-  input[type=text]
-    {   
-        margin-top:6px;
-        width:80%;
-        border: 0px;
-        background: transparent;
-        border-radius: 10px;
-        border:2px solid black;
-        height:25px;
-        color: black;
+    function disconnect(){
+      socket.emit('disconn',{ my_room_no: my_room_no});
+      location.reload();
     }
-      input[type=submit]
-  {
-        margin-top:6px;
-        border: 0px;
-        background: transparent;
-        border-radius: 10px;
-        border:2px solid black;
-        height:25px;
-        color: black;
-        font-family:  'Lobster', cursive;
-        width:20%;
-  }
 
-      </style>
-      <title>Hello world</title>
-   </head>
-   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-   <script src = "/socket.io/socket.io.js"></script>
-   <script>var socket = io();
-      var my_id = Math.random();
-      var my_room_no;
-      var msg;
-      socket.on('connectToRoom',function(data) {
-          my_room_no = data;
-         document.getElementById('room_no').innerHTML = my_room_no;
-      });
-
-      socket.on('wait_for_the_user', function(data){
-         document.getElementById('status').innerHTML = data;
-      });
-
-      socket.on('user_found', function(data){
-         document.getElementById('status').innerHTML = data;
-      });
-
-      socket.on('disconnected', function(data){
-         document.getElementById('status').innerHTML = data;
-      })
-
-      function send_message(){
-         msg = document.getElementById('message_field').value ;
-         console.log(my_id);
-         socket.emit('send_message', { my_room_no: my_room_no , my_id: my_id , message: msg});
-         document.getElementById('message_field').value ="";
-         return false;
+    socket.on('he_is_typing',function(data){
+      if(data.his_id != my_id){
+        document.getElementById('typing_status').innerHTML = "<br>Stranger is typing ...";
       }
+    });
 
-      function disconnect(){
-         socket.emit('disconn',{ my_room_no: my_room_no});
-         location.reload();
+    socket.on('he_stoped',function(data){
+      if(data.his_id != my_id){
+        setTimeout(function(){
+          document.getElementById('typing_status').innerHTML = "";
+        },3000);
+
       }
+    });
 
-      socket.on('he_is_typing',function(data){
-         if(data.his_id != my_id){
-            document.getElementById('typing_status').innerHTML = "<br>Stranger is typing ...";
-                        setTimeout(function(){
-               document.getElementById('typing_status').innerHTML="";
-            }, 1000);
-         }
-      });
-
-      socket.on('new_message',function(data){
-         if(my_id == data.my_id){
-            document.getElementById('messages').innerHTML = "<p class=sent_texts>"+data.msg+"</p>";
-            document.getElementById('messages').id = "";
-            var privious_messages = document.getElementById('message_box').innerHTML;
-            document.getElementById('message_box').innerHTML = privious_messages + "<span id=messages></span>";
-         }else{
-            document.getElementById('messages').innerHTML = "<p align=received_texts>"+data.msg+"</p>";
-            document.getElementById('messages').id = "";
-            var privious_messages = document.getElementById('message_box').innerHTML;
-            document.getElementById('message_box').innerHTML = privious_messages + "<span id=messages></span>";
-         }
-      });
+    socket.on('new_message',function(data){
+      if(my_id == data.my_id){
+        document.getElementById('message_box').innerHTML += "<div class=msg_container><div class='speech-bubble-dsr tooltip'><p class='reply_details tooltiptext'></p><p class=msg_text>"+data.msg+"</p></div></div>";
+      }else{
+        document.getElementById('message_box').innerHTML += "<div class=msg_container><div class='speech-bubble-ds tooltip'><p class='reply_details tooltiptext'></p><p class=msg_text>"+data.msg+"</p></div></div>";
+      }
+      $('#message_box').scrollTop($('#message_box')[0].scrollHeight - $('#message_box')[0].clientHeight);
+    });
 
 
-         function i_am_typing(){
-            console.log('typing...');
-            socket.emit('i_am_typing', {my_id: my_id, my_room_no: my_room_no});
-         }
-      </script> 
-   <body>
+    function i_am_typing(){
+      console.log('typing...');
+      socket.emit('i_am_typing', {my_id: my_id, my_room_no: my_room_no});
+    }
+
+    function i_stoped(){
+      socket.emit('i_stoped', {my_id: my_id, my_room_no: my_room_no});
+    }
+  </script> 
+  <body>
+    <div id="main">
       <div id="navbar">
-   <span id="room_no"></span>
-   <span id="status"></span>
-   <span id="typing_status">
-   </span>
-
-      </div>
-
-
-   <div id="message_box">
-      <span id="messages"></span>
-   </div>
-   <div class="footer">
-   <div class="flexContainer">
-   <form action="#"  onsubmit="return send_message()">
-      <input type="text"  placeholder="Enter message" id="message_field" onkeyup="i_am_typing()">
-      <input type="submit" value="send">
-   </form>
-   </div>
-</div>
-   </body>
+            <p id="status"></p>      
+            <p id="typing_status"></p>
+          </div>
+          <div id="message_box">
+          </div>
+          <div class="footer">
+            <div class="message-field">
+              <form action="#"  onsubmit="return send_message()">
+                <input type="text"  placeholder="Enter message" id="message_field" onkeydown="i_am_typing()" onkeyup="i_stoped()" autocomplete="off">
+                <input type="submit" value="send">
+              </form>
+            </div>
+          </div>
+    </div>
+  </body>
 </html>
